@@ -18,6 +18,8 @@ from starlette.responses import Response
 
 from . import _shared as sh
 
+logger = sh.logger
+
 try:
     from utils import strip_wikilinks  # type: ignore
 except ImportError:  # pragma: no cover

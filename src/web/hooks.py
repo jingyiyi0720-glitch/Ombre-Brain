@@ -19,6 +19,8 @@ from starlette.responses import Response
 
 from . import _shared as sh
 
+logger = sh.logger
+
 try:
     from utils import strip_wikilinks, count_tokens_approx  # type: ignore
 except ImportError:  # pragma: no cover

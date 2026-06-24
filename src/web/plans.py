@@ -15,6 +15,8 @@ from starlette.responses import Response
 
 from . import _shared as sh
 
+logger = sh.logger
+
 
 def register(mcp) -> None:
 

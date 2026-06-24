@@ -24,6 +24,7 @@ from . import plans
 from . import letters
 from . import hooks
 from . import buckets
+from . import import_api
 
 
 def register_all(mcp) -> None:
@@ -39,3 +40,4 @@ def register_all(mcp) -> None:
     letters.register(mcp)
     hooks.register(mcp)
     buckets.register(mcp)
+    import_api.register(mcp)

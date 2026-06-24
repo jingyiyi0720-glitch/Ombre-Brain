@@ -95,6 +95,66 @@ write_deletion_notice = None   # def(names: list) -> None
 pop_deletion_notice = None     # def() -> str
 
 
+# --- 项目 .env 读写（config / env-config / host-vault 路由共用，故放共享层）---
+# 与原 server.py 行为一致：.env 落在 src/.env。本文件在 src/web/ 下，上两级即 src/。
+def _project_env_path() -> str:
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+
+
+def _read_env_var(name: str) -> str:
+    """Return current value of `name` from process env first, then .env file (best-effort)."""
+    val = os.environ.get(name, "").strip()
+    if val:
+        return val
+    env_path = _project_env_path()
+    if not os.path.exists(env_path):
+        return ""
+    try:
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, _, v = line.partition("=")
+                if k.strip() == name:
+                    return v.strip().strip('"').strip("'")
+    except Exception:
+        pass
+    return ""
+
+
+def _write_env_var(name: str, value: str) -> None:
+    """Idempotent upsert of `NAME=value` in project .env. Creates file if missing.
+    Preserves other entries verbatim. Quotes values containing spaces.
+    """
+    env_path = _project_env_path()
+    quoted = f'"{value}"' if value and (" " in value or "#" in value) else value
+    new_line = f"{name}={quoted}\n"
+
+    lines: list[str] = []
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+    replaced = False
+    for i, raw in enumerate(lines):
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        k, _, _v = stripped.partition("=")
+        if k.strip() == name:
+            lines[i] = new_line
+            replaced = True
+            break
+    if not replaced:
+        if lines and not lines[-1].endswith("\n"):
+            lines[-1] += "\n"
+        lines.append(new_line)
+
+    with open(env_path, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
+
 # --- Dashboard 鉴权常量（原 server.py 调参面板）---
 _PASSWORD_SALT_BYTES = 16            # secrets.token_hex(该值) → 32 char hex salt
 _SESSION_TOKEN_BYTES = 32            # secrets.token_urlsafe(该值) → ~43 char token
