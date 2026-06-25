@@ -912,7 +912,7 @@ if __name__ == "__main__":
             _app.router.lifespan_context = _combined_lifespan
             _app.routes.extend(_extra_app.routes)
             logger.info(
-                "MCP split / MCP 拆分：主连接器 /mcp（5 高频工具）+ 副连接器 /mcp-extra（6 低频工具）"
+                "MCP split / MCP 拆分：主连接器 /mcp（5 高频工具）+ 副连接器 /mcp-extra（7 低频工具）"
             )
         else:
             _app = mcp.sse_app()
@@ -1008,7 +1008,7 @@ if __name__ == "__main__":
         uvicorn.run(_app, host="0.0.0.0", port=OMBRE_PORT)
     else:
         # stdio / sse：单连接器无 5 工具上限，把 mcp_extra 的工具回灌到 mcp
-        # 让所有 11 个工具仍在同一连接器里暴露（兼容旧 Claude Desktop 配置）。
+        # 让所有 12 个工具仍在同一连接器里暴露（兼容旧 Claude Desktop 配置）。
         # 依赖 FastMCP._tool_manager 私有结构；若未来版本变化，回退为只暴露主集 5 工具。
         try:
             mcp._tool_manager._tools.update(mcp_extra._tool_manager._tools)
